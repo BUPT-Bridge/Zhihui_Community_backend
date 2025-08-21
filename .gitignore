@@ -1,0 +1,77 @@
+# Python环境
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Python字节码文件
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Django相关
+*.sqlite3
+*.db
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# 环境变量文件
+.env
+.env.local
+.env.development
+.env.production
+
+# IDE和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+logs/
+
+# 操作系统
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 缓存
+.cache/
+.pytest_cache/
+
+# 覆盖率报告
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# 测试
+.tox/
+.coverage
+.pytest_cache/
+
+# 文档
+docs/_build/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# 其他
+*.bak
+*.tmp
+node_modules/
+.sass-cache/
