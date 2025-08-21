@@ -15,17 +15,30 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# 加载环境变量配置
+try:
+    from utils.env_config import get_env_config
+    
+    # 初始化环境变量配置（会自动验证必需的变量）
+    env_config = get_env_config()
+    print("环境变量配置已加载")
+    
+except Exception as e:
+    print(f"环境变量配置加载失败: {e}")
+    import sys
+    sys.exit(1)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-yxu9#4n+aogh4lm-1bqx69u9t)yw-ho83k+!8h8zlr$et4v^0+'
+SECRET_KEY = env_config.django_secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_config.debug
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env_config.allowed_hosts
 
 
 # Application definition
