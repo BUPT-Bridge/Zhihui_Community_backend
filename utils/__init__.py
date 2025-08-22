@@ -9,6 +9,9 @@ from .auth import (
     get_openid_from_request
 )
 
+# 导出文件工具
+from .file_utils import generate_random_avatar_filename
+
 # 导出环境变量配置相关功能
 from .env_config import (
     get_env_config,
@@ -28,5 +31,7 @@ __all__ = [
     # 环境变量配置相关
     'get_env_config',
     'get_wx_config',
-    'get_jwt_config'
+    'get_jwt_config',
+    # 文件工具
+    'generate_random_avatar_filename'
 ]

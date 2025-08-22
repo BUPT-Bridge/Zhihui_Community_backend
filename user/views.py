@@ -11,14 +11,19 @@ class WxLoginView(APIView):
     """
     微信小程序登录接口
     
-    POST /api/wx-login/
+    GET /api/wx-login/ - 验证登录状态
+    POST /api/wx-login/ - 微信登录
     
-    请求参数:
+    GET请求:
+    - 需要在请求头中携带token: Authorization: Bearer <token>
+    - 返回简单的登录状态验证
+    
+    POST请求参数:
     {
         "code": "微信登录凭证code"
     }
     
-    返回:
+    POST请求返回:
     {
         "code": 200,
         "message": "登录成功",
@@ -36,6 +41,40 @@ class WxLoginView(APIView):
     
     # 微信API接口
     WX_API_URL = "https://api.weixin.qq.com/sns/jscode2session"
+    
+    def get(self, request):
+        """验证登录状态 - 仅用于测试token是否有效"""
+        try:
+            # 获取token
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+            if not auth_header:
+                return self._error_response(
+                    code=401,
+                    message='未提供授权信息',
+                    status_code=status.HTTP_401_UNAUTHORIZED
+                )
+            
+            # 提取token
+            token = auth_header.replace('Bearer ', '') if auth_header.startswith('Bearer ') else auth_header
+            
+            # 验证token并获取openid
+            try:
+                from utils import verify_token
+                verify_token(token)  # 只验证token有效性，不关心内容
+                return self._success_response(message='登录状态有效')
+            except Exception as e:
+                return self._error_response(
+                    code=401,
+                    message=f'无效的登录状态: {str(e)}',
+                    status_code=status.HTTP_401_UNAUTHORIZED
+                )
+                
+        except Exception as e:
+            return self._error_response(
+                code=500,
+                message=f'服务器内部错误: {str(e)}',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     def post(self, request):
         """处理POST请求 - 微信登录"""
@@ -249,14 +288,14 @@ class UserProfileView(APIView):
     
     def put(self, request):
         """
-        更新用户信息
+        更新用户信息 - 支持multipart/form-data格式
         
         可更新字段:
         - nickname: 昵称
         - name: 姓名
         - phone: 手机号
         - address: 地址
-        - avatar: 头像文件
+        - avatar: 头像文件 (通过表单上传)
         """
         try:
             # 获取token
@@ -279,29 +318,39 @@ class UserProfileView(APIView):
             except User.DoesNotExist:
                 return self._error_response(404, '用户不存在')
             
-            # 只更新请求中存在的字段
-            allowed_fields = ['nickname', 'name', 'phone', 'address', 'avatar']
-            update_data = {}
+            # 处理表单数据 (multipart/form-data)
+            updated = False
             
-            for field in allowed_fields:
+            # 文本字段: 昵称、姓名、电话、地址
+            text_fields = ['nickname', 'name', 'phone', 'address']
+            for field in text_fields:
                 if field in request.data:
-                    update_data[field] = request.data[field]
+                    # 如果字段在表单中存在，则更新
+                    value = request.data.get(field)
+                    
+                    # 昵称长度验证
+                    if field == 'nickname' and value and len(value) > 50:
+                        return self._error_response(400, '昵称长度不能超过50个字符')
+                    
+                    # 更新字段值
+                    setattr(user, field, value)
+                    updated = True
             
-            # 验证昵称长度
-            if 'nickname' in update_data and len(update_data['nickname']) > 50:
-                return self._error_response(400, '昵称长度不能超过50个字符')
+            # 处理头像文件
+            if 'avatar' in request.FILES:
+                # 头像会自动通过 generate_random_avatar_filename 函数重命名
+                user.avatar = request.FILES['avatar']
+                updated = True
             
-            # 更新用户数据
-            for field, value in update_data.items():
-                setattr(user, field, value)
+            # 如果有更新，则保存
+            if updated:
+                user.save()
             
-            # 保存
-            user.save()
-            
-            # 序列化返回更新后的用户信息
-            serializer = UserSerializer(user)
-            
-            return self._success_response('更新用户信息成功', serializer.data)
+            # 返回成功响应
+            return self._success_response(
+                message='更新用户信息成功', 
+                data={'updated': True}
+            )
         
         except Exception as e:
             return self._error_response(500, f'服务器内部错误: {str(e)}')

@@ -1,6 +1,7 @@
 from django.db import models
 from imagekit.models import ProcessedImageField
 from imagekit.processors import ResizeToFill
+from utils.file_utils import generate_random_avatar_filename
 
 
 class User(models.Model):
@@ -11,7 +12,7 @@ class User(models.Model):
     address = models.TextField(blank=True, null=True, verbose_name="住址")
     openid = models.CharField(max_length=64, unique=True, blank=True, null=True, verbose_name="微信小程序OpenID")
     avatar = ProcessedImageField(
-        upload_to='avatars/',
+        upload_to=generate_random_avatar_filename,  # 使用自定义的文件名生成函数
         processors=[ResizeToFill(120, 120)],
         format='WEBP',
         options={'quality': 85},
