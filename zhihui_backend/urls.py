@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user.urls')),
+    path('database/', include('database.urls')),
 ]
 
 # 在开发环境中提供媒体文件访问

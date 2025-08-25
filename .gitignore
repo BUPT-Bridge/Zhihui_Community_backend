@@ -78,3 +78,11 @@ node_modules/
 # Django migrations
 */migrations/
 */migrations/*
+
+utils/api_keys.pub
+
+milvus_data/*
+file/
+
+test_auth_client.py
+test_search_client.py
